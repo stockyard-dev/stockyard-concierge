@@ -1,6 +1,6 @@
 package main
 import ("fmt";"log";"net/http";"os";"github.com/stockyard-dev/stockyard-concierge/internal/server";"github.com/stockyard-dev/stockyard-concierge/internal/store")
-func main(){port:=os.Getenv("PORT");if port==""{port="10120"};dataDir:=os.Getenv("DATA_DIR");if dataDir==""{dataDir="./concierge-data"}
+func main(){port:=os.Getenv("PORT");if port==""{port="9700"};dataDir:=os.Getenv("DATA_DIR");if dataDir==""{dataDir="./concierge-data"}
 db,err:=store.Open(dataDir);if err!=nil{log.Fatalf("concierge: %v",err)};defer db.Close();srv:=server.New(db)
-fmt.Printf("\n  Concierge — customer onboarding checklists\n  Dashboard:  http://localhost:%s/ui\n  API:        http://localhost:%s/api\n\n",port,port)
+fmt.Printf("\n  Concierge\n  Dashboard:  http://localhost:%s/ui\n  API:        http://localhost:%s/api\n\n",port,port)
 log.Printf("concierge: listening on :%s",port);log.Fatal(http.ListenAndServe(":"+port,srv))}
