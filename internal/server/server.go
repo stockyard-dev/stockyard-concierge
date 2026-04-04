@@ -35,6 +35,7 @@ patch.Steps=existing.Steps};if patch.Assignee==""{
 patch.Assignee=existing.Assignee};if patch.Status==""{
 patch.Status=existing.Status};if patch.DueDate==""{
 patch.DueDate=existing.DueDate}
+    if patch.Progress==0{patch.Progress=existing.Progress}
     s.db.Update(&patch);wj(w,200,s.db.Get(patch.ID))
 }
 func(s *Server)del(w http.ResponseWriter,r *http.Request){s.db.Delete(r.PathValue("id"));wj(w,200,map[string]string{"deleted":"ok"})}
