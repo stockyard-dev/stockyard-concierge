@@ -30,7 +30,7 @@ const dashHTML = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="v
 .item-meta{font-size:.55rem;color:var(--cm);margin-top:.3rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
 .item-actions{display:flex;gap:.3rem;flex-shrink:0}
 .badge{font-size:.5rem;padding:.12rem .35rem;text-transform:uppercase;letter-spacing:1px;border:1px solid}
-.badge.pending{border-color:var(--gold);color:var(--gold)}.badge.in-progress{border-color:var(--blue);color:var(--blue)}.badge.complete{border-color:var(--green);color:var(--green)}
+.badge.pending{border-color:var(--gold);color:var(--gold)}.badge.active{border-color:var(--blue);color:var(--blue)}.badge.complete{border-color:var(--green);color:var(--green)}
 .btn{font-size:.6rem;padding:.25rem .5rem;cursor:pointer;border:1px solid var(--bg3);background:var(--bg);color:var(--cd);transition:all .2s}
 .btn:hover{border-color:var(--leather);color:var(--cream)}.btn-p{background:var(--rust);border-color:var(--rust);color:#fff}
 .btn-sm{font-size:.55rem;padding:.2rem .4rem}
@@ -54,13 +54,12 @@ const dashHTML = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="v
 <script>
 var A='/api',items=[],editId=null;
 async function load(){var r=await fetch(A+'/checklists').then(function(r){return r.json()});items=r.checklists||[];renderStats();render();}
-function renderStats(){var total=items.length;var done=items.filter(function(c){return c.status==='complete'}).length;var active=items.filter(function(c){return c.status==='in-progress'}).length;
+function renderStats(){var total=items.length,active=items.filter(function(c){return c.status==='active'}).length,done=items.filter(function(c){return c.status==='complete'}).length;
 document.getElementById('stats').innerHTML='<div class="st"><div class="st-v">'+total+'</div><div class="st-l">Total</div></div><div class="st"><div class="st-v" style="color:var(--blue)">'+active+'</div><div class="st-l">Active</div></div><div class="st"><div class="st-v" style="color:var(--green)">'+done+'</div><div class="st-l">Complete</div></div>';}
 function render(){var q=(document.getElementById('search').value||'').toLowerCase();var f=items;
 if(q)f=f.filter(function(c){return(c.customer_name||'').toLowerCase().includes(q)||(c.template||'').toLowerCase().includes(q)||(c.assignee||'').toLowerCase().includes(q)});
 if(!f.length){document.getElementById('list').innerHTML='<div class="empty">No checklists.</div>';return;}
 var h='';f.forEach(function(c){
-var pct=c.progress||0;
 h+='<div class="item"><div class="item-top"><div style="flex:1">';
 h+='<div class="item-title">'+esc(c.customer_name)+'</div>';
 if(c.template)h+='<div class="item-sub">'+esc(c.template)+'</div>';
@@ -68,11 +67,10 @@ h+='</div><div class="item-actions">';
 h+='<button class="btn btn-sm" onclick="openEdit(''+c.id+'')">Edit</button>';
 h+='<button class="btn btn-sm" onclick="del(''+c.id+'')" style="color:var(--red)">&#10005;</button>';
 h+='</div></div>';
-h+='<div class="progress-bar"><div class="progress-fill" style="width:'+pct+'%"></div></div>';
+h+='<div class="progress-bar"><div class="progress-fill" style="width:'+(c.progress||0)+'%"></div></div>';
 h+='<div class="item-meta">';
-var st=(c.status||'pending').replace(/_/g,'-');
-h+='<span class="badge '+st+'">'+st+'</span>';
-h+='<span>'+pct+'% complete</span>';
+if(c.status)h+='<span class="badge '+c.status+'">'+c.status+'</span>';
+h+='<span>'+(c.progress||0)+'%</span>';
 if(c.assignee)h+='<span>'+esc(c.assignee)+'</span>';
 if(c.due_date)h+='<span>Due: '+c.due_date+'</span>';
 h+='</div></div>';});
@@ -84,7 +82,7 @@ h+='<div class="fr"><label>Customer *</label><input id="f-name" value="'+esc(i.c
 h+='<div class="row2"><div class="fr"><label>Template</label><input id="f-tmpl" value="'+esc(i.template)+'" placeholder="e.g. Enterprise Onboarding"></div>';
 h+='<div class="fr"><label>Assignee</label><input id="f-assign" value="'+esc(i.assignee)+'"></div></div>';
 h+='<div class="row2"><div class="fr"><label>Status</label><select id="f-status">';
-['pending','in-progress','complete'].forEach(function(s){h+='<option value="'+s+'"'+(i.status===s?' selected':'')+'>'+s+'</option>';});
+['pending','active','complete'].forEach(function(s){h+='<option value="'+s+'"'+(i.status===s?' selected':'')+'>'+s.charAt(0).toUpperCase()+s.slice(1)+'</option>';});
 h+='</select></div><div class="fr"><label>Due Date</label><input id="f-due" type="date" value="'+esc(i.due_date)+'"></div></div>';
 h+='<div class="fr"><label>Progress (%)</label><input id="f-prog" type="number" min="0" max="100" value="'+(i.progress||0)+'"></div>';
 h+='<div class="acts"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-p" onclick="submit()">'+(isEdit?'Save':'Create')+'</button></div>';
